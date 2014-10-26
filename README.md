@@ -22,7 +22,7 @@ Example
 -------
 
 ```bash
-$ ghinst peco/peoc
+$ ghinst peco/peco
 $ ghinst mattn/jvgrep -d ~/local/bin
 $ ghinst --url https://<GHE_URL> foo/bar
 ```
