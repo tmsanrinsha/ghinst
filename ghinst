@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-progname=$(basename $0)
-
 function help(){
     cat <<EOT
 Usage:
