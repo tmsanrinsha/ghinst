@@ -66,8 +66,15 @@ fi
 user=`echo $repo | awk -F/ '{print $1}'`
 project=`echo $repo | awk -F/ '{print $2}'`
 os=`uname | tr "A-Z" "a-z"`
-processor=`uname -p | tr -d 'i'`
-pattern="\/${user}\/${project}\/releases\/download\/[^/]+\/[^_]+_${os}_${processor}[^\"]+"
+case `uname -a` in
+    *64*)
+        architecture='amd64'
+        ;;
+    *)
+        architecture='386'
+        ;;
+esac
+pattern="\/${user}\/${project}\/releases\/download\/[^/]+\/[^_]+_${os}_${architecture}[^\"]+"
 dl_path=`curl -sL "${gh_url}/${user}/${project}/releases" | sed -Ene "1,/$pattern/s/.*($pattern).*/\1/p"`
 if [ -z $dl_path ];then
     echo "Can't get download url"
