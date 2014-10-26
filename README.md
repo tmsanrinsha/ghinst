@@ -3,7 +3,7 @@ Install
 
 ```bash
 $ curl -L 'https://raw.githubusercontent.com/tmsanrinsha/ghinst/master/ghinst' > ~/bin/ghinst
-$ chmod a+x ghinst
+$ chmod a+x ~/bin/ghinst
 ```
 
 Usage
