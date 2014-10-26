@@ -5,7 +5,7 @@ progname=$(basename $0)
 function help(){
     cat <<EOT
 Usage:
-  gh-release-get [(-h|--help)] [(-d|--install-dir) <dir>] [--url <url>]
+  ghinst [(-h|--help)] [(-d|--install-dir) <dir>] [--url <url>]
 Options:
   -h, --help        Displays this information
   -d, --install-dir Install directory (abusolute or relative path) (Default: $HOME/bin)
@@ -81,7 +81,7 @@ if [ -z $dl_path ];then
     exit 1
 fi
 
-tmpdir=`mktemp -d /tmp/gh-release-get.XXXXXX`
+tmpdir=`mktemp -d /tmp/ghinst.XXXXXX`
 pushd $tmpdir >/dev/null
 curl -LO "${gh_url}/$dl_path"
 file=`echo $dl_path | sed -Ee 's/.*\/([^/]+)$/\1/'`
