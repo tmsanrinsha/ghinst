@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!env bash
 
 progname=$(basename $0)
 
@@ -68,7 +68,7 @@ project=`echo $repo | awk -F/ '{print $2}'`
 os=`uname | tr "A-Z" "a-z"`
 processor=`uname -p | tr -d 'i'`
 pattern="\/${user}\/${project}\/releases\/download\/[^/]+\/[^_]+_${os}_${processor}[^\"]+"
-dl_path=`curl -sL "${gh_url}/${user}/${project}/releases" | /usr/bin/sed -Ene "1,/$pattern/s/.*($pattern).*/\1/p"`
+dl_path=`curl -sL "${gh_url}/${user}/${project}/releases" | sed -Ene "1,/$pattern/s/.*($pattern).*/\1/p"`
 if [ -z $dl_path ];then
     echo "Can't get download url"
     exit 1
@@ -77,7 +77,7 @@ fi
 tmpdir=`mktemp -d /tmp/gh-release-get.XXXXXX`
 pushd $tmpdir >/dev/null
 curl -LO "${gh_url}/$dl_path"
-file=`echo $dl_path | /usr/bin/sed -Ee 's/.*\/([^/]+)$/\1/'`
+file=`echo $dl_path | sed -Ee 's/.*\/([^/]+)$/\1/'`
 
 case $file in
     *tar.gz)
@@ -92,8 +92,8 @@ case $file in
         ;;
 esac
 
-dir=`echo $file | /usr/bin/sed -Ee 's/^([^.]+).*$/\1/'`
-cmd=`echo $file | /usr/bin/sed -Ee 's/^([^_]+).*$/\1/'`
+dir=`echo $file | sed -Ee 's/^([^.]+).*$/\1/'`
+cmd=`echo $file | sed -Ee 's/^([^_]+).*$/\1/'`
 popd >/dev/null
 
 mv ${tmpdir}/${dir}/${cmd} $install_dir
