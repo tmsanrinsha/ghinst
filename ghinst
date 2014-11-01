@@ -81,8 +81,10 @@ case `uname -a` in
         architecture='386'
         ;;
 esac
-pattern="\/${user}\/${project}\/releases\/download\/[^/]+\/[^_]+_${os}_${architecture}[^\"]+"
-dl_path=`curl -sL "${gh_url}/${user}/${project}/releases" | sed -Ene "1,/$pattern/s/.*($pattern).*/\1/p"`
+pattern="\/${user}\/${project}\/releases\/download\/[^/]\+\/[^_]\+_${os}_${architecture}[^\"]\+"
+dl_path=`$downloader "${gh_url}/${user}/${project}/releases" | sed -ne "1,/$pattern/s/.*\($pattern\).*/\1/p"`
+echo $dl_path
+exit
 if [ -z $dl_path ];then
     echo "Can't get download url"
     exit 1
