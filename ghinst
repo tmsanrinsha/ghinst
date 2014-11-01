@@ -12,6 +12,15 @@ EOT
     exit 1;
 }
 
+if type curl 1>/dev/null 2>&1;then
+    downloader='curl -ksLR'
+elif type wget 1>/dev/null 2>&1;then
+    downloader='wget --no-check-certificate -O -'
+else
+    echo 'Please install curl or wget.'
+    exit 1
+fi
+
 for OPT in "$@"
 do
     case "$OPT" in
