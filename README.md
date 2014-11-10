@@ -14,7 +14,7 @@ Usage:
   ghinst [(-h|--help)] [(-d|--install-dir) dir] [--url url] repository
 Options:
   -h, --help        Displays this information
-  -d, --install-dir Install directory (abusolute or relative path) (Default: $HOME/bin)
+  -d, --install-dir Install directory (absolute or relative path) (Default: $HOME/bin)
       --url         GitHub URL (Default: https://github.com)
 ```
 

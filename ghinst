@@ -13,7 +13,7 @@ EOT
 }
 
 if type curl 1>/dev/null 2>&1;then
-    downloader='curl -ksLR'
+    downloader='curl -kLR'
 elif type wget 1>/dev/null 2>&1;then
     downloader='wget --no-check-certificate -O -'
 else
@@ -83,8 +83,7 @@ case `uname -a` in
 esac
 pattern="\/${user}\/${project}\/releases\/download\/[^/]\+\/[^_]\+_${os}_${architecture}[^\"]\+"
 dl_path=`$downloader "${gh_url}/${user}/${project}/releases" | sed -ne "1,/$pattern/s/.*\($pattern\).*/\1/p"`
-echo $dl_path
-exit
+
 if [ -z $dl_path ];then
     echo "Can't get download url"
     exit 1
@@ -92,8 +91,9 @@ fi
 
 tmpdir=`mktemp -d /tmp/ghinst.XXXXXX`
 pushd $tmpdir >/dev/null
-curl -LO "${gh_url}/$dl_path"
-file=`echo $dl_path | sed -Ee 's/.*\/([^/]+)$/\1/'`
+
+file=`echo $dl_path | sed -e 's/.*\/\([^/]\+\)$/\1/'`
+$downloader ${gh_url}/$dl_path > $file
 
 case $file in
     *tar.gz)
@@ -108,8 +108,8 @@ case $file in
         ;;
 esac
 
-dir=`echo $file | sed -Ee 's/^([^.]+).*$/\1/'`
-cmd=`echo $file | sed -Ee 's/^([^_]+).*$/\1/'`
+dir=`echo $file | sed -e 's/^\([^.]\+\).*$/\1/'`
+cmd=`echo $file | sed -e 's/^\([^_]\+\).*$/\1/'`
 popd >/dev/null
 
 mv ${tmpdir}/${dir}/${cmd} $install_dir
