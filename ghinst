@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+set -e
 function help(){
     cat <<EOT
 Usage:
@@ -112,5 +112,14 @@ dir=`echo $file | sed -e 's/^\([^.]\+\).*$/\1/'`
 cmd=`echo $file | sed -e 's/^\([^_]\+\).*$/\1/'`
 popd >/dev/null
 
-mv ${tmpdir}/${dir}/${cmd} $install_dir
+if test -f ${tmpdir}/${dir}/${cmd}; then
+    mv ${tmpdir}/${dir}/${cmd} $install_dir
+elif test -f ${tmpdir}/${cmd}; then
+    mv ${tmpdir}/${cmd} $install_dir
+else
+    echo "Can't find command!"
+    exit 1
+fi
+
+rm -r $tmpdir
 echo "Installed to $install_dir"
