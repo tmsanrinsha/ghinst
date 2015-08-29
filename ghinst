@@ -83,6 +83,10 @@ case `uname -a` in
 esac
 pattern="\/${user}\/${project}\/releases\/download\/[^/]\+\/[^_]\+_${os}_${architecture}[^\"]\+"
 dl_path=`$downloader "${gh_url}/${user}/${project}/releases" | sed -ne "1,/$pattern/s/.*\($pattern\).*/\1/p"`
+# APIを使うてもある
+# [Releases | GitHub API](https://developer.github.com/v3/repos/releases/#get-the-latest-release)
+# 例）
+# curl 'https://api.github.com/repos/peco/peco/releases/latest'
 
 if [ -z $dl_path ];then
     echo "Can't get download url"
