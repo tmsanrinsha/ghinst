@@ -49,10 +49,10 @@ if [ -z $repo ]; then
     exit 1
 fi
 
-if [[ "$repo" =~ https?://[^/]+/([^/]+/[^/]+) ]]; then
+if [[ "$repo" =~ (https?://[^/]+)/([^/]+/[^/]+) ]]; then
   url="$repo"
-  gh_url="${BASH_REMATCH[0]}"
-  repo=${BASH_REMATCH[1]}
+  gh_url="${BASH_REMATCH[1]}"
+  repo=${BASH_REMATCH[2]}
 else
   url="https://github.com/$repo"
   gh_url='https://github.com'
