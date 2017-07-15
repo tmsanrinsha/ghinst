@@ -13,11 +13,11 @@ Usage
 
 ```
 Usage:
-  ghinst [(-h|--help)] [(-d|--install-dir) dir] [--url url] repository
+  ghinst [(-h|--help)] [(-d|--install-dir) dir] repository
 Options:
   -h, --help        Displays this information
-  -d, --install-dir Install directory (absolute or relative path) (Default: $HOME/bin)
-      --url         GitHub URL (Default: https://github.com)
+  -d, --install-dir Install directory (abusolute or relative path) (Default: $HOME/bin)
+  -v, --verbose     Verbose
 ```
 
 Example
@@ -26,5 +26,5 @@ Example
 ```bash
 $ ghinst peco/peco
 $ ghinst mattn/jvgrep -d ~/local/bin
-$ ghinst --url https://<GHE_URL> foo/bar
+$ ghinst https://<GHE_HOSTNAME>/foo/bar
 ```

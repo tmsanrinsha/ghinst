@@ -3,23 +3,14 @@ set -e
 function help(){
     cat <<EOT
 Usage:
-  ghinst [(-h|--help)] [(-d|--install-dir) dir] [--url url] repository
+  ghinst [(-h|--help)] [(-d|--install-dir) dir] repository
 Options:
   -h, --help        Displays this information
   -d, --install-dir Install directory (abusolute or relative path) (Default: $HOME/bin)
-      --url         GitHub URL (Default: https://github.com)
+  -v, --verbose     Verbose
 EOT
     exit 1;
 }
-
-if type curl 1>/dev/null 2>&1;then
-    downloader='curl -kLR'
-elif type wget 1>/dev/null 2>&1;then
-    downloader='wget --no-check-certificate -O -'
-else
-    echo 'Please install curl or wget.'
-    exit 1
-fi
 
 for OPT in "$@"
 do
@@ -35,14 +26,11 @@ do
             install_dir="$2"
             shift 2
             ;;
-        '--url' )
-            if [[ -z "$2" ]] || [[ "$2" =~ ^-+ ]]; then
-                echo "option requires an argument: $1" 1>&2
-                exit 1
-            fi
-            gh_url="$2"
-            shift 2
-            ;;
+        '-v' | '--verbose' )
+          set -x
+          verbose=1
+          shift
+          ;;
         -*)
             echo "illegal option: $1" 1>&2
             exit 1
@@ -61,17 +49,20 @@ if [ -z $repo ]; then
     exit 1
 fi
 
+if [[ "$repo" =~ https?://[^/]+/([^/]+/[^/]+) ]]; then
+  url="$repo"
+  gh_url="${BASH_REMATCH[0]}"
+  repo=${BASH_REMATCH[1]}
+else
+  url="https://github.com/$repo"
+  gh_url='https://github.com'
+fi
+
 # set default values
 if [ -z "$install_dir" ]; then
     install_dir="$HOME/bin"
 fi
 
-if [ -z "$gh_url" ]; then
-    gh_url='https://github.com'
-fi
-
-user=`echo $repo | awk -F/ '{print $1}'`
-project=`echo $repo | awk -F/ '{print $2}'`
 os=`uname | tr "A-Z" "a-z"`
 case `uname -a` in
     *64*)
@@ -81,30 +72,55 @@ case `uname -a` in
         architecture='386'
         ;;
 esac
-pattern="\/${user}\/${project}\/releases\/download\/[^/]\+\/[^_]\+_${os}_${architecture}[^\"]\+"
-dl_path=`$downloader "${gh_url}/${user}/${project}/releases" | sed -ne "1,/$pattern/s/.*\($pattern\).*/\1/p"`
-# APIを使うてもある
+
+if type curl 1>/dev/null 2>&1;then
+    downloader='curl -skLR'
+elif type wget 1>/dev/null 2>&1;then
+    downloader='wget --no-check-certificate -O -'
+else
+    echo 'Please install curl or wget.'
+    exit 1
+fi
+
+# releasesページからダウンロードパスを抜き取る
+# APIを使うてもあるが、JSONをパースする必要あり
 # [Releases | GitHub API](https://developer.github.com/v3/repos/releases/#get-the-latest-release)
 # 例）
 # curl 'https://api.github.com/repos/peco/peco/releases/latest'
 
-if [ -z $dl_path ];then
-    echo "Can't get download url"
-    exit 1
+pattern="/${repo}/releases/download/[^/]\+/.\+${os}_${architecture}[^\"]\+"
+# /を\でエスケープ
+pattern=${pattern//\//\\/}
+dl_path=`$downloader "${url}/releases" | sed -n "1,$pattern/s/.*\($pattern\).*/\1/p"`
+#                                                ------------
+#                                                     |
+#                                                     +-- 一番最初にマッチしたもの（最新のバージョン）に限定
+
+
+if [ -z "$dl_path" ];then
+  # ダウンロードパスが取れなかった時はアーキテクチャを抜いて再挑戦
+  pattern="/${repo}/releases/download/[^/]\+/.\+${os}[^\"]\+"
+  pattern=${pattern//\//\\/}
+  dl_path=`$downloader "${url}/releases" | sed -n "1,$pattern/s/.*\($pattern\).*/\1/p"`
+
+  if [ -z "$dl_path" ];then
+      echo "Can't get download url"
+      exit 1
+  fi
 fi
 
 tmpdir=`mktemp -d /tmp/ghinst.XXXXXX`
 pushd $tmpdir >/dev/null
 
-file=`echo $dl_path | sed -e 's/.*\/\([^/]\+\)$/\1/'`
-$downloader ${gh_url}/$dl_path > $file
+file=${dl_path##*/}
+$downloader "${gh_url}${dl_path}" > $file
 
 case $file in
     *tar.gz)
         gzip -dc $file | tar xvf -
         ;;
     *zip)
-        unzip $file
+        unzip $file > /dev/null
         ;;
     *)
         echo 'unknown extension'
@@ -113,7 +129,7 @@ case $file in
 esac
 
 dir=`echo $file | sed -e 's/^\([^.]\+\).*$/\1/'`
-cmd=`echo $file | sed -e 's/^\([^_]\+\).*$/\1/'`
+cmd=`echo $file | sed -e 's/^\([^._]\+\).*$/\1/'`
 popd >/dev/null
 
 if test -f ${tmpdir}/${dir}/${cmd}; then
@@ -126,4 +142,4 @@ else
 fi
 
 rm -r $tmpdir
-echo "Installed to $install_dir"
+echo "$cmd is installed to $install_dir"
